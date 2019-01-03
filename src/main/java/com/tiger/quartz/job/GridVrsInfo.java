@@ -1,6 +1,10 @@
 package com.tiger.quartz.job;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class GridVrsInfo {
+    private static final Logger LOGGER = LoggerFactory.getLogger(GridVrsInfo.class);
     private int id;
 
     private String mainCors; // 主参考站
@@ -17,12 +21,7 @@ public class GridVrsInfo {
 
 
     public void genMessage(){
-
-
-
-
+        LOGGER.info("生成电文");
     }
-
-
 
 }

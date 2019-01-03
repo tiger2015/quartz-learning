@@ -19,9 +19,9 @@ public class QuartzJobManager {
         if(scheduler == null){
             throw new NullPointerException("scheduler is null");
         }
-        if(scheduler.isShutdown()){
-            scheduler.start();
-        }
+
+        System.out.println("start scheduler");
+        scheduler.start();
     }
 
     public void stop() throws SchedulerException {
@@ -36,10 +36,12 @@ public class QuartzJobManager {
         JobDetail jobDetail = JobBuilder.newJob(clazz)
                 .withIdentity(jobDescribe.getJobKey())
                 .build();
+
         jobDetail.getJobDataMap().put("data",executor);
 
         Trigger trigger = TriggerBuilder.newTrigger()
                 .withIdentity(jobDescribe.getTriggerKey())
+                .startNow()
                 .withSchedule(SimpleScheduleBuilder.simpleSchedule().repeatForever().withIntervalInMilliseconds(interval))
                 .build();
         scheduler.scheduleJob(jobDetail,trigger);
