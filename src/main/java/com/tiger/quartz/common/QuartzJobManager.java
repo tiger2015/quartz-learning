@@ -32,16 +32,29 @@ public class QuartzJobManager {
     }
 
 
-    public void addJob(JobDescribe jobDescribe,Class clazz,Object ...objects){
-        JobDetail jobDetail = JobBuilder.newJob(clazz).withIdentity(jobDescribe.getJobKey()).setJobData();
+    public void addJob(JobDescribe jobDescribe, Class clazz,Object executor, long interval) throws SchedulerException {
+        JobDetail jobDetail = JobBuilder.newJob(clazz)
+                .withIdentity(jobDescribe.getJobKey())
+                .build();
+        jobDetail.getJobDataMap().put("data",executor);
 
-        JobDataMap dataMap = new JobDataMap();
-
-
-
-
-
+        Trigger trigger = TriggerBuilder.newTrigger()
+                .withIdentity(jobDescribe.getTriggerKey())
+                .withSchedule(SimpleScheduleBuilder.simpleSchedule().repeatForever().withIntervalInMilliseconds(interval))
+                .build();
+        scheduler.scheduleJob(jobDetail,trigger);
     }
 
+
+    public void removeJob(JobDescribe jobDescribe) throws SchedulerException {
+        synchronized (this){
+            // 停止触发器
+            scheduler.pauseTrigger(jobDescribe.getTriggerKey());
+            // 移除触发器
+            scheduler.unscheduleJob(jobDescribe.getTriggerKey());
+            // 删除任务
+            scheduler.deleteJob(jobDescribe.getJobKey());
+        }
+    }
 
 }
