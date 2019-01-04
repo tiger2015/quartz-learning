@@ -1,14 +1,27 @@
 package com.tiger.quartz.common;
 
 import org.quartz.*;
+import org.quartz.impl.DirectSchedulerFactory;
 import org.quartz.impl.StdSchedulerFactory;
+
+import java.util.Properties;
 
 public class QuartzJobManager {
     private Scheduler scheduler = null;
 
-    public QuartzJobManager() {
+    public QuartzJobManager(int maxThreads, String name) {
         try {
-            scheduler = StdSchedulerFactory.getDefaultScheduler();
+
+            //DirectSchedulerFactory factory = DirectSchedulerFactory.getInstance();
+            //factory.createVolatileScheduler(maxThreads);
+            //scheduler = factory.getScheduler();
+
+            StdSchedulerFactory factory = new StdSchedulerFactory();
+            Properties props = new Properties();
+            props.setProperty("org.quartz.threadPool.threadCount", maxThreads + "");
+            props.setProperty("org.quartz.scheduler.instanceName", name);
+            factory.initialize(props);
+            scheduler = factory.getScheduler();
         } catch (SchedulerException e) {
             e.printStackTrace();
         }
@@ -16,40 +29,40 @@ public class QuartzJobManager {
 
 
     public void start() throws SchedulerException {
-        if(scheduler == null){
+        if (scheduler == null) {
             throw new NullPointerException("scheduler is null");
         }
 
-        System.out.println("start scheduler");
+        //System.out.println("start scheduler");
         scheduler.start();
     }
 
     public void stop() throws SchedulerException {
-        if(scheduler == null){
+        if (scheduler == null) {
             throw new NullPointerException("scheduler is null");
         }
         scheduler.shutdown();
     }
 
 
-    public void addJob(JobDescribe jobDescribe, Class clazz,Object executor, long interval) throws SchedulerException {
+    public void addJob(JobDescribe jobDescribe, Class clazz, Object executor, long interval) throws SchedulerException {
         JobDetail jobDetail = JobBuilder.newJob(clazz)
                 .withIdentity(jobDescribe.getJobKey())
                 .build();
 
-        jobDetail.getJobDataMap().put("data",executor);
+        jobDetail.getJobDataMap().put("data", executor);
 
         Trigger trigger = TriggerBuilder.newTrigger()
                 .withIdentity(jobDescribe.getTriggerKey())
                 .startNow()
                 .withSchedule(SimpleScheduleBuilder.simpleSchedule().repeatForever().withIntervalInMilliseconds(interval))
                 .build();
-        scheduler.scheduleJob(jobDetail,trigger);
+        scheduler.scheduleJob(jobDetail, trigger);
     }
 
 
     public void removeJob(JobDescribe jobDescribe) throws SchedulerException {
-        synchronized (this){
+        synchronized (this) {
             // 停止触发器
             scheduler.pauseTrigger(jobDescribe.getTriggerKey());
             // 移除触发器

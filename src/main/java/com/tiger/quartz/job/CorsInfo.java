@@ -22,7 +22,7 @@ public class CorsInfo {
     public void syncBaselines(){
 
         LOGGER.info("同步基线");
-        System.out.println("同步基线");
+
 
     }
 

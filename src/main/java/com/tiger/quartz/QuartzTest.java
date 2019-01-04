@@ -2,9 +2,7 @@ package com.tiger.quartz;
 
 import com.tiger.quartz.common.JobDescribe;
 import com.tiger.quartz.common.QuartzJobManager;
-import com.tiger.quartz.job.CorsInfo;
-import com.tiger.quartz.job.CorsInfoSyncJob;
-import com.tiger.quartz.job.HelloJob;
+import com.tiger.quartz.job.*;
 import org.quartz.*;
 import org.quartz.impl.StdSchedulerFactory;
 
@@ -42,7 +40,7 @@ public class QuartzTest {
 //        } catch (SchedulerException e) {
 //            e.printStackTrace();
 //        }
-        QuartzJobManager jobManager = new QuartzJobManager();
+        QuartzJobManager jobManager = new QuartzJobManager(10,"cors");
         jobManager.start();
 
         for(int i=0;i<300;i++){
@@ -51,7 +49,13 @@ public class QuartzTest {
             jobManager.addJob(jobDescribe, CorsInfoSyncJob.class,corsInfo,300);
         }
 
-        Thread.sleep(5000);
+        QuartzJobManager jobManager1 = new QuartzJobManager(5,"baseline");
+        jobManager1.start();
+        for(int i=0;i<100;i++){
+            JobDescribe jobDescribe = new JobDescribe("job-"+i,"cors-group","trigger-"+i,"trigger-group");
+            GridVrsInfo vrsInfo = new GridVrsInfo();
+            jobManager1.addJob(jobDescribe, VrsMessageGenJob.class,vrsInfo,500);
+        }
 
 
 
