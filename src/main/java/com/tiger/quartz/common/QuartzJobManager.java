@@ -1,16 +1,23 @@
 package com.tiger.quartz.common;
 
 import org.quartz.*;
-import org.quartz.impl.DirectSchedulerFactory;
 import org.quartz.impl.StdSchedulerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Properties;
 
 public class QuartzJobManager {
+    private static final Logger LOGGER = LoggerFactory.getLogger(QuartzJobManager.class);
+
     private Scheduler scheduler = null;
 
     public QuartzJobManager(int maxThreads, String name) {
         try {
+
+
+
+
 
             //DirectSchedulerFactory factory = DirectSchedulerFactory.getInstance();
             //factory.createVolatileScheduler(maxThreads);
@@ -33,7 +40,6 @@ public class QuartzJobManager {
             throw new NullPointerException("scheduler is null");
         }
 
-        //System.out.println("start scheduler");
         scheduler.start();
     }
 
@@ -45,7 +51,7 @@ public class QuartzJobManager {
     }
 
 
-    public void addJob(JobDescribe jobDescribe, Class clazz, Object executor, long interval) throws SchedulerException {
+    public void addScheduleJob(JobDescribe jobDescribe, Class clazz, Object executor, long interval) throws SchedulerException {
         JobDetail jobDetail = JobBuilder.newJob(clazz)
                 .withIdentity(jobDescribe.getJobKey())
                 .build();
@@ -57,9 +63,29 @@ public class QuartzJobManager {
                 .startNow()
                 .withSchedule(SimpleScheduleBuilder.simpleSchedule().repeatForever().withIntervalInMilliseconds(interval))
                 .build();
-        scheduler.scheduleJob(jobDetail, trigger);
+        synchronized (this){
+            scheduler.scheduleJob(jobDetail, trigger);
+        }
     }
 
+
+    public void addJob(JobDescribe jobDescribe, Class clazz, Object executor) throws SchedulerException {
+        JobDetail jobDetail = JobBuilder.newJob(clazz)
+                .withIdentity(jobDescribe.getJobKey())
+                .build();
+
+        jobDetail.getJobDataMap().put("data", executor);
+
+        Trigger trigger = TriggerBuilder.newTrigger()
+                .withIdentity(jobDescribe.getTriggerKey())
+                .startNow()
+                .withSchedule(SimpleScheduleBuilder.simpleSchedule().withRepeatCount(0))
+                .build();
+
+        synchronized (this){
+            scheduler.scheduleJob(jobDetail,trigger);
+        }
+    }
 
     public void removeJob(JobDescribe jobDescribe) throws SchedulerException {
         synchronized (this) {
