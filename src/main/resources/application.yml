@@ -1,13 +1,11 @@
-server:
-  port: 8088
-spring:
-  quartz:
-    properties:
-      org:
-        quartz:
-          scheduler:
-            instanceName: MyScheduler
-          threadPool:
-            threadCount: 3
-          jobStore:
-            class: org.quartz.simpl.RAMJobStore
+#spring:
+#  quartz:
+#    properties:
+#      org:
+#        quartz:
+#          scheduler:
+#            instanceName: MyScheduler
+#          threadPool:
+#            threadCount: 3
+#          jobStore:
+#            class: org.quartz.simpl.RAMJobStore
